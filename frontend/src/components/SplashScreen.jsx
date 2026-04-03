@@ -7,14 +7,9 @@ const SplashScreen = () => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Navigate to login after 4 seconds (or adjust based on video length)
-    const fadeTimer = setTimeout(() => {
-      setFadeOut(true);
-    }, 4000);
-
-    const navTimer = setTimeout(() => {
-      navigate('/login');
-    }, 5000); // 1s after fade starts
+    // Start fade-out at 4s, navigate at 5s (after 1s fade)
+    const fadeTimer = setTimeout(() => setFadeOut(true), 4000);
+    const navTimer  = setTimeout(() => navigate('/login'), 5000);
 
     return () => {
       clearTimeout(fadeTimer);
@@ -23,7 +18,7 @@ const SplashScreen = () => {
   }, [navigate]);
 
   return (
-    <div className={`splash-container ${fadeOut ? 'fade-out' : ''}`}>
+    <div className={`splash-container${fadeOut ? ' fade-out' : ''}`}>
       <video
         className="splash-video"
         autoPlay
