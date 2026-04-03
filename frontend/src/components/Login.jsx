@@ -13,10 +13,10 @@ export default function Login({ onLoginSuccess }) {
     const [phase, setPhase] = useState(0);
 
     useEffect(() => {
-        const t1 = setTimeout(() => setPhase(1), 1000); // 1s: Welcome text zoom in down
-        const t2 = setTimeout(() => setPhase(2), 3000); // 3s: Box slides up
-        const t3 = setTimeout(() => setPhase(3), 5000); // 5s: Card scales up from box
-        const t4 = setTimeout(() => setPhase(4), 6000); // 6s: Box rolls out to the left
+        const t1 = setTimeout(() => setPhase(1), 300); // 0.3s
+        const t2 = setTimeout(() => setPhase(2), 800); // 0.8s
+        const t3 = setTimeout(() => setPhase(3), 1600); // 1.6s
+        const t4 = setTimeout(() => setPhase(4), 2200); // 2.2s
         return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
     }, []);
 
@@ -129,15 +129,15 @@ export default function Login({ onLoginSuccess }) {
 
                             <motion.div
                                 className="auth-card"
-                                initial={{ opacity: 0, scale: 0.2, y: 100 }}
-                                animate={phase >= 3 ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.2, y: 100 }}
-                                transition={{ duration: 0.8, type: 'spring', bounce: 0.4 }}
+                                initial={{ opacity: 0, scale: 0, y: 0 }}
+                                animate={phase >= 3 ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0, y: 0 }}
+                                transition={{ duration: 0.6, type: 'spring', bounce: 0.5 }}
                                 style={{ 
                                     position: 'relative', 
                                     zIndex: 10, 
                                     width: '100%', 
                                     visibility: phase >= 3 ? 'visible' : 'hidden',
-                                    transformOrigin: 'center 80%'
+                                    transformOrigin: 'center center'
                                 }}
                             >
                                 <div className="auth-card-accent" />

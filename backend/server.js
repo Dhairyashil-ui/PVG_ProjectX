@@ -20,6 +20,7 @@ const profileSchema = new mongoose.Schema({
   picture: { type: String },
   userImage: { type: String }, // base64
   voiceSample: { type: String }, // base64
+  skippedProfile: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 const Profile = mongoose.model('Profile', profileSchema);
@@ -29,7 +30,8 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '954199899941-3efq12bhk
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Main Auth Route
 app.post('/api/auth/google', async (req, res) => {
@@ -39,26 +41,36 @@ app.post('/api/auth/google', async (req, res) => {
   }
 
   try {
-    // If the frontend used useGoogleLogin (which returns an access token, not an ID token),
-    // we use tokeninfo to verify it with Google endpoint or we get profile data
-
     const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
-
     if (!response.ok) {
       throw new Error('Failed to fetch user info with token');
     }
 
     const payload = await response.json();
-
-    // Verify user payload has an email
     if (!payload.email) {
       return res.status(401).json({ success: false, message: 'Invalid payload' });
     }
 
-    console.log(`User logged in: ${payload.email} (${payload.name})`);
+    console.log(`User mapped visually: ${payload.email} (${payload.name})`);
 
-    // Here you would typically look up the user in your database, 
-    // create a session/JWT, and return it.
+    // Lookup existing profile
+    let profile = await Profile.findOne({ email: payload.email });
+    let isProfileComplete = false;
+
+    if (!profile) {
+      // Create it inherently from Google Payload
+      profile = new Profile({
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture,
+      });
+      await profile.save();
+    } else {
+      // It exists - checking if image OR voice was provided OR if they intentionally skipped
+      if (profile.userImage || profile.voiceSample || profile.skippedProfile) {
+        isProfileComplete = true;
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -66,6 +78,7 @@ app.post('/api/auth/google', async (req, res) => {
         email: payload.email,
         name: payload.name,
         picture: payload.picture,
+        isProfileComplete
       },
       message: 'Login successful'
     });
@@ -74,7 +87,7 @@ app.post('/api/auth/google', async (req, res) => {
     return res.status(401).json({ success: false, message: 'Token verification failed' });
   }
 }); app.post('/api/profile', async (req, res) => {
-  const { email, name, picture, userImage, voiceSample } = req.body;
+  const { email, name, picture, userImage, voiceSample, skippedProfile } = req.body;
   if (!email) {
     return res.status(400).json({ success: false, message: 'Email is required' });
   }
@@ -85,13 +98,15 @@ app.post('/api/auth/google', async (req, res) => {
       // Update existing profile
       profile.name = name || profile.name;
       profile.picture = picture || profile.picture;
-      profile.userImage = userImage || profile.userImage;
-      profile.voiceSample = voiceSample || profile.voiceSample;
+      if (userImage !== undefined) profile.userImage = userImage;
+      if (voiceSample !== undefined) profile.voiceSample = voiceSample;
+      if (skippedProfile !== undefined) profile.skippedProfile = skippedProfile;
+      
       await profile.save();
     } else {
       // Create new profile
       profile = new Profile({
-        email, name, picture, userImage, voiceSample
+        email, name, picture, userImage, voiceSample, skippedProfile
       });
       await profile.save();
     }
