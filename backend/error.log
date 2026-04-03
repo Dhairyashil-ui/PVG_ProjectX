@@ -1,0 +1,58 @@
+﻿node : node:internal/module
+s/cjs/loader:1908
+At line:1 char:59
++ ... \Dhairyashil\farmerDB
+\project-x-am\backend; & 
+{node server.js} 2>&1 | ...
++                          
+                          
+~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (nod  
+  e:internal/modules/cjs   
+ /loader:1908:String) [    
+], RemoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+    throw err;
+    ^
+
+SyntaxError: C:\Users\Dhair
+yashil\farmerDB\project-x-a
+m\backend\node_modules\mime
+-db\db.json: Unterminated 
+string in JSON at position 
+94720 (line 4269 column 29)
+    at parse (<anonymous>)
+    at Object..json (node:i
+nternal/modules/cjs/loader:
+1905:39)
+    at Module.load (node:in
+ternal/modules/cjs/loader:1
+481:32)
+    at Module._load (node:i
+nternal/modules/cjs/loader:
+1300:12)
+    at 
+TracingChannel.traceSync (n
+ode:diagnostics_channel:328
+:14)
+    at wrapModuleLoad (node
+:internal/modules/cjs/loade
+r:245:24)
+    at Module.require (node
+:internal/modules/cjs/loade
+r:1504:12)
+    at require (node:intern
+al/modules/helpers:152:16)
+    at Object.<anonymous> (
+C:\Users\Dhairyashil\farmer
+DB\project-x-am\backend\nod
+e_modules\mime-db\index.js:
+12:18)
+    at Module._compile (nod
+e:internal/modules/cjs/load
+er:1761:14)
+
+Node.js v24.11.1
