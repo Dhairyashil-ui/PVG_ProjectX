@@ -1128,3 +1128,258 @@ h1, h2, h3, h4 {
     display: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ─── AUTH PAGE LAYOUT ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Root: fixed full-viewport, pure white */
+.auth-root {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 5000;
+}
+
+body {
+  background: #ffffff !important;
+}
+
+/* ── Layout: two columns, fills remaining height ── */
+.auth-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Left: Lottie Animation panel ── */
+.auth-lottie-panel {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+/* Subtle dot grid pattern on the lottie panel */
+.auth-lottie-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(37, 99, 235, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+.auth-lottie {
+  width: 88%;
+  height: 88%;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Right: card panel ── */
+.auth-card-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 200px 20px 20px;
+  background: #ffffff;
+  position: relative;
+}
+
+/* Subtle gradient wash */
+.auth-card-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 60% 40%, rgba(219, 234, 254, 0.3), transparent 60%);
+  pointer-events: none;
+}
+
+/* Google style heading outside box */
+.auth-welcome-heading {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--txt);
+  margin-bottom: 32px;
+  font-family: var(--font);
+  letter-spacing: -0.04em;
+  text-align: center;
+  line-height: 1.1;
+  position: relative;
+  z-index: 1;
+}
+
+.google-blue {
+  color: #4285F4;
+}
+
+/* ── Auth Card ── */
+.auth-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border: 1px solid rgba(228, 232, 240, 0.9);
+  border-radius: 20px;
+  padding: 44px 40px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 1;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 12px 32px rgba(15, 23, 42, 0.05);
+  transition: box-shadow 0.35s var(--ease-smooth), transform 0.35s var(--ease-smooth);
+  animation: scaleIn 0.5s var(--ease-out-expo) both;
+}
+
+.auth-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.04),
+    0 8px 24px rgba(15, 23, 42, 0.09),
+    0 20px 48px rgba(15, 23, 42, 0.08);
+}
+
+/* Top accent line on card */
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  border-radius: 0 0 4px 4px;
+  opacity: 0.5;
+}
+
+.auth-card-accent {
+  display: none;
+}
+
+/* Card header */
+.auth-card-header {
+  margin-bottom: 32px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.auth-card-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--txt);
+  margin: 0 0 8px;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.auth-card-subtitle {
+  font-size: 14.5px;
+  font-weight: 400;
+  color: var(--txt-muted);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.auth-card-by {
+  font-size: 14px;
+  color: var(--txt-muted);
+  margin: 0;
+  font-weight: 400;
+}
+
+.auth-card-by strong {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.auth-card-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin-bottom: 28px;
+}
+
+/* OAuth section */
+.auth-oauth {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.auth-oauth-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--txt-muted);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  letter-spacing: 0.01em;
+}
+
+.auth-shield-icon {
+  color: var(--brand);
+  flex-shrink: 0;
+}
+
+.auth-google-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  border-radius: var(--radius-md);
+  transition: transform 0.2s var(--ease-smooth), filter 0.2s;
+  overflow: hidden;
+}
+
+.auth-google-wrap:hover {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.15));
+}
+
+.auth-google-wrap:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Error */
+.auth-error {
+  background: var(--red-fade);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #7f1d1d;
+  margin-bottom: 16px;
+  animation: fadeUp 0.3s var(--ease-out-expo);
+}
+
+/* Footer */
+.auth-card-footer {
+  font-size: 12px;
+  color: var(--txt-faint);
+  text-align: center;
+  line-height: 1.65;
+  margin-top: 4px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Login Page ─────────────────────────────────────────────────── */
