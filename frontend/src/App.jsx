@@ -13,12 +13,7 @@ function App() {
   React.useEffect(() => {
     const savedUser = localStorage.getItem('trinetra_user');
     if (savedUser && (location.pathname === '/' || location.pathname === '/login')) {
-      const parsed = JSON.parse(savedUser);
-      if (parsed.isProfileComplete) {
-         navigate('/home');
-      } else {
-         navigate('/profile');
-      }
+      navigate('/home');
     }
   }, [navigate, location.pathname]);
 
@@ -31,8 +26,7 @@ function App() {
         <Route path="/login" element={<Login onLoginSuccess={(user) => {
             // Save global profile state to bypass on future loads
             localStorage.setItem('trinetra_user', JSON.stringify(user));
-            if (user.isProfileComplete) navigate('/home');
-            else navigate('/profile', { state: { user } });
+            navigate('/home');
         }} />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/home" element={<Home />} />

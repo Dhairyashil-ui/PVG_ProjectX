@@ -19,7 +19,6 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [report, setReport] = useState(null);
   const fileInputRef = useRef(null);
-  const [useLocation, setUseLocation] = useState(false);
 
   const triggerAnalysis = () => {
     setIsProcessing(true);
@@ -89,8 +88,8 @@ export default function Home() {
           <motion.h1 layout style={{ fontSize: activeUpload ? '28px' : '40px', color: '#202124', fontWeight: '800', letterSpacing: '-1px', marginBottom: '12px' }}>
             {activeUpload ? `Process ${options.find(o => o.id === activeUpload)?.label} Media` : (
               <>
-                <span style={{ background: 'linear-gradient(135deg, #1a73e8 0%, #669df6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>Trinetra</span>
-                <span style={{ color: '#000000', fontWeight: '500', marginLeft: '8px' }}>Console</span>
+                <span style={{ color: '#4285F4' }}>Trinetra</span>
+                <span style={{ color: '#000000', fontWeight: '400', marginLeft: '8px' }}>Console</span>
               </>
             )}
           </motion.h1>
@@ -169,24 +168,6 @@ export default function Home() {
                     <h3 style={{ fontSize: '22px', color: '#202124', fontWeight: 'bold', marginBottom: '8px' }}>
                       Drag & Drop your {options.find(o => o.id === activeUpload)?.label} file here
                     </h3>
-                    
-                    {(activeUpload === 'image' || activeUpload === 'video') && (
-                      <label style={{
-                        display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', marginBottom: '16px', 
-                        cursor: 'pointer', fontSize: '14px', color: '#202124', fontWeight: '600',
-                        background: '#f8f9fa', padding: '8px 20px', borderRadius: '24px', border: '1px solid #dadce0',
-                        transition: 'all 0.2s', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)'
-                      }} onMouseOver={(e) => { e.currentTarget.style.borderColor = '#4285F4'; e.currentTarget.style.background = '#fff'; }} onMouseOut={(e) => { e.currentTarget.style.borderColor = '#dadce0'; e.currentTarget.style.background = '#f8f9fa'; }}>
-                        <input 
-                          type="checkbox" 
-                          checked={useLocation} 
-                          onChange={(e) => setUseLocation(e.target.checked)}
-                          style={{ width: '16px', height: '16px', accentColor: '#4285F4', cursor: 'pointer' }}
-                        />
-                        {activeUpload === 'image' ? 'Image included my face' : 'Video included my face'}
-                      </label>
-                    )}
-
                     <p style={{ color: '#80868b', marginBottom: '32px', fontSize: '15px' }}>
                       {options.find(o => o.id === activeUpload)?.accepts}
                     </p>
@@ -244,15 +225,15 @@ export default function Home() {
 
                      {!isProcessing && report && (
                        <div style={{ width: '100%', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '24px' }}>
+                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
                             {/* Visual Region Mapper Container */}
-                            <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dadce0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-                               <div style={{ padding: '14px 20px', borderBottom: '1px solid #dadce0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#3c4043' }}>{activeUpload === 'audio' ? 'Audio Playback & Hotspots' : 'Target Region Mapping'}</span>
-                                  <span style={{ fontSize: '12px', color: '#ea4335', background: '#fce8e6', padding: '4px 10px', borderRadius: '12px', fontWeight: '700' }}>2 Anomalies</span>
-                               </div>
-                               <div style={{ flex: 1, minHeight: '260px', background: '#111827', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '16px 16px', padding: '20px' }}>
-                                  {activeUpload === 'audio' ? (
+                            {activeUpload === 'audio' && (
+                               <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dadce0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                                  <div style={{ padding: '14px 20px', borderBottom: '1px solid #dadce0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                     <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#3c4043' }}>Audio Playback & Hotspots</span>
+                                     <span style={{ fontSize: '12px', color: '#ea4335', background: '#fce8e6', padding: '4px 10px', borderRadius: '12px', fontWeight: '700' }}>2 Anomalies</span>
+                                  </div>
+                                  <div style={{ flex: 1, minHeight: '260px', background: '#111827', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '16px 16px', padding: '20px' }}>
                                      <div style={{ width: '100%', height: '100px', display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
                                         {Array.from({ length: 40 }).map((_, i) => {
                                            const isFake = (i > 12 && i < 18) || (i > 28 && i < 33);
@@ -270,52 +251,32 @@ export default function Home() {
                                         {/* Playhead Scanner */}
                                         <motion.div animate={{ left: ['0%', '100%', '0%'] }} transition={{ repeat: Infinity, duration: 6, ease: "linear" }} style={{ position: 'absolute', top: '-20px', bottom: '-20px', width: '2px', background: '#fff', boxShadow: '0 0 10px #fff', zIndex: 10 }} />
                                      </div>
-                                  ) : (
-                                     <div style={{ width: '130px', height: '170px', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '60px 60px 40px 40px', position: 'relative' }}>
-                                        <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6, type: 'spring' }} style={{ position: 'absolute', top: '35px', right: '5px', width: '45px', height: '35px', border: '1.5px solid #ea4335', borderRadius: '50%', background: 'rgba(234,67,53,0.3)', boxShadow: '0 0 20px rgba(234,67,53,0.5)' }} />
-                                        <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.1, type: 'spring' }} style={{ position: 'absolute', bottom: '25px', left: '15px', width: '55px', height: '35px', border: '1.5px solid #ea4335', borderRadius: '40%', background: 'rgba(234,67,53,0.2)', boxShadow: '0 0 15px rgba(234,67,53,0.3)' }} />
-                                        <motion.div animate={{ y: [0, 170, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: '#4285F4', boxShadow: '0 0 10px #4285F4' }} />
-                                     </div>
-                                  )}
+                                  </div>
                                </div>
-                            </div>
+                            )}
 
                             {/* Spectral Thermal Heatmap Container */}
-                            <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dadce0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-                               <div style={{ padding: '14px 20px', borderBottom: '1px solid #dadce0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#3c4043' }}>{activeUpload === 'audio' ? 'Spectrogram Heatmap Analysis' : 'AI Confidence Heatmap'}</span>
-                                  <span style={{ fontSize: '12px', color: '#5f6368', background: '#f1f3f4', padding: '4px 10px', borderRadius: '12px', fontWeight: '600' }}>{activeUpload?.toUpperCase()} STREAM</span>
-                               </div>
-                               <div style={{ flex: 1, minHeight: '260px', background: '#0a0a0a', position: 'relative', overflow: 'hidden', padding: activeUpload === 'audio' ? '12px' : '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  {activeUpload === 'audio' ? (
-                                     <div style={{ width: '100%', height: 'calc(100% - 40px)', background: 'linear-gradient(to bottom, #020617 0%, #1e1b4b 100%)', position: 'relative', borderRadius: '8px', overflow: 'hidden', marginTop: '-20px' }}>
-                                        <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)', gridTemplateRows: 'repeat(8, 1fr)', gap: '1px' }}>
-                                           {Array.from({ length: 128 }).map((_, i) => {
-                                              const col = i % 16;
-                                              const row = Math.floor(i / 16);
-                                              const isHot = ((col >= 5 && col <= 7) && row > 3) || ((col >= 11 && col <= 13) && row < 4);
-                                              const hue = isHot ? 0 : 210;
-                                              const lum = isHot ? 55 : 30;
-                                              const opacity = isHot ? 0.7 + Math.random() * 0.3 : 0.1 + Math.random() * 0.4;
-                                              return <motion.div initial={{ opacity: 0 }} animate={{ opacity }} transition={{ delay: Math.random() * 0.5 }} key={i} style={{ background: `hsl(${hue}, 100%, ${lum}%)`, borderRadius: '2px' }} />
-                                           })}
-                                        </div>
-                                     </div>
-                                  ) : (
+                            {activeUpload !== 'audio' && (
+                               <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dadce0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                                  <div style={{ padding: '14px 20px', borderBottom: '1px solid #dadce0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                     <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#3c4043' }}>AI Confidence Heatmap</span>
+                                     <span style={{ fontSize: '12px', color: '#5f6368', background: '#f1f3f4', padding: '4px 10px', borderRadius: '12px', fontWeight: '600' }}>{activeUpload?.toUpperCase()} STREAM</span>
+                                  </div>
+                                  <div style={{ flex: 1, minHeight: '260px', background: '#0a0a0a', position: 'relative', overflow: 'hidden', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                      <>
                                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.9 }} transition={{ delay: 0.3, duration: 1.5 }} style={{ width: '100%', height: '100%', background: 'radial-gradient(circle at 70% 30%, #ea4335 0%, #fbbc05 25%, #34a853 55%, transparent 80%)', filter: 'blur(20px)' }} />
                                        <div style={{ position: 'absolute', inset: '0', background: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '10% 10%', pointerEvents: 'none' }} />
                                      </>
-                                  )}
 
-                                  {/* Risk Grade Legend */}
-                                  <div style={{ position: 'absolute', bottom: '16px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', background: 'rgba(0,0,0,0.5)', padding: '8px 12px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
-                                     <span>Authentic</span>
-                                     <div style={{ width: '120px', height: '6px', borderRadius: '4px', background: 'linear-gradient(90deg, #34A853, #FBBC05, #EA4335)' }} />
-                                     <span>Synthetic</span>
+                                     {/* Risk Grade Legend */}
+                                     <div style={{ position: 'absolute', bottom: '16px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', background: 'rgba(0,0,0,0.5)', padding: '8px 12px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
+                                        <span>Authentic</span>
+                                        <div style={{ width: '120px', height: '6px', borderRadius: '4px', background: 'linear-gradient(90deg, #34A853, #FBBC05, #EA4335)' }} />
+                                        <span>Synthetic</span>
+                                     </div>
                                   </div>
                                </div>
-                            </div>
+                            )}
                          </div>
                          
                          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
