@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Image as ImageIcon, Video, Mic, Monitor, UploadCloud, Bell, User, 
-  FileText, CheckCircle, ShieldAlert, Fingerprint, Activity, AlertTriangle, Info 
+  FileText, CheckCircle, ShieldAlert, Fingerprint, Activity, AlertTriangle, Info, Loader2
 } from 'lucide-react';
 import { useState, useRef } from 'react';
+import logo from '../assets/logo.jpeg';
 
 const options = [
   { id: 'image', label: 'Image', icon: ImageIcon, color: '#4285F4', bg: '#e8f0fe', accepts: 'Supports JPG, PNG, WEBP' },
@@ -18,29 +19,9 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [report, setReport] = useState(null);
   const fileInputRef = useRef(null);
+  const [useLocation, setUseLocation] = useState(false);
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setReport(null); // Clear previous report when a new file is added
-    }
-  };
-
-  const handleOptionClick = (id) => {
-    if (activeUpload !== id) {
-      setActiveUpload(id);
-      setFile(null); 
-      setReport(null);
-      setIsProcessing(false);
-    } else {
-      setActiveUpload(null);
-      setFile(null);
-      setReport(null);
-      setIsProcessing(false);
-    }
-  };
-
-  const handleSubmit = () => {
+  const triggerAnalysis = () => {
     setIsProcessing(true);
     // Simulate complex backend analysis delay (e.g. 3.5 seconds)
     setTimeout(() => {
@@ -60,8 +41,30 @@ export default function Home() {
     }, 3500);
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+      setReport(null); 
+      triggerAnalysis();
+    }
+  };
+
+  const handleOptionClick = (id) => {
+    if (activeUpload !== id) {
+      setActiveUpload(id);
+      setFile(null); 
+      setReport(null);
+      setIsProcessing(false);
+    } else {
+      setActiveUpload(null);
+      setFile(null);
+      setReport(null);
+      setIsProcessing(false);
+    }
+  };
+
   return (
-    <div className="auth-root" style={{ background: '#f8f9fa', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflowY: 'auto' }}>
+    <div className="auth-root" style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflowY: 'auto' }}>
       {/* Background Ambience */}
       <div className="login-bg-blob login-bg-blob-1" style={{ zIndex: 0 }} />
       <div className="login-bg-blob login-bg-blob-2" style={{ zIndex: 0 }} />
@@ -84,7 +87,12 @@ export default function Home() {
           style={{ textAlign: 'center', marginBottom: activeUpload ? '32px' : '56px' }}
         >
           <motion.h1 layout style={{ fontSize: activeUpload ? '28px' : '40px', color: '#202124', fontWeight: '800', letterSpacing: '-1px', marginBottom: '12px' }}>
-            {activeUpload ? `Process ${options.find(o => o.id === activeUpload)?.label} Media` : 'Workspace Interface'}
+            {activeUpload ? `Process ${options.find(o => o.id === activeUpload)?.label} Media` : (
+              <>
+                <span style={{ background: 'linear-gradient(135deg, #1a73e8 0%, #669df6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>Trinetra</span>
+                <span style={{ color: '#000000', fontWeight: '500', marginLeft: '8px' }}>Console</span>
+              </>
+            )}
           </motion.h1>
           <motion.p layout style={{ color: '#5f6368', fontSize: activeUpload ? '16px' : '18px', fontWeight: '400' }}>
             {activeUpload ? 'Complete the file upload step securely in your dashboard.' : 'Select an evidence stream below to initiate analysis tracking.'}
@@ -148,11 +156,11 @@ export default function Home() {
               {/* Drag and Drop Zone */}
               <div 
                 style={{ 
-                  background: 'white', borderRadius: '24px', padding: '56px 24px', textAlign: 'center', 
-                  border: `2px dashed ${options.find(o => o.id === activeUpload)?.color || '#dadce0'}`, 
-                  boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
+                  background: isProcessing ? 'transparent' : '#C9CDD3', borderRadius: '24px', padding: '56px 24px', textAlign: 'center', 
+                  border: 'none', 
+                  boxShadow: 'none',
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  transition: 'border 0.3s'
+                  transition: 'background 0.3s'
                 }}
               >
                 {!file ? (
@@ -161,6 +169,24 @@ export default function Home() {
                     <h3 style={{ fontSize: '22px', color: '#202124', fontWeight: 'bold', marginBottom: '8px' }}>
                       Drag & Drop your {options.find(o => o.id === activeUpload)?.label} file here
                     </h3>
+                    
+                    {(activeUpload === 'image' || activeUpload === 'video') && (
+                      <label style={{
+                        display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', marginBottom: '16px', 
+                        cursor: 'pointer', fontSize: '14px', color: '#202124', fontWeight: '600',
+                        background: '#f8f9fa', padding: '8px 20px', borderRadius: '24px', border: '1px solid #dadce0',
+                        transition: 'all 0.2s', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)'
+                      }} onMouseOver={(e) => { e.currentTarget.style.borderColor = '#4285F4'; e.currentTarget.style.background = '#fff'; }} onMouseOut={(e) => { e.currentTarget.style.borderColor = '#dadce0'; e.currentTarget.style.background = '#f8f9fa'; }}>
+                        <input 
+                          type="checkbox" 
+                          checked={useLocation} 
+                          onChange={(e) => setUseLocation(e.target.checked)}
+                          style={{ width: '16px', height: '16px', accentColor: '#4285F4', cursor: 'pointer' }}
+                        />
+                        {activeUpload === 'image' ? 'Image included my face' : 'Video included my face'}
+                      </label>
+                    )}
+
                     <p style={{ color: '#80868b', marginBottom: '32px', fontSize: '15px' }}>
                       {options.find(o => o.id === activeUpload)?.accepts}
                     </p>
@@ -183,64 +209,131 @@ export default function Home() {
                     </button>
                   </motion.div>
                 ) : (
-                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                     <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: options.find(o => o.id === activeUpload)?.bg, display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
-                        <FileText size={36} color={options.find(o => o.id === activeUpload)?.color} />
-                     </div>
-                     <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#202124', marginBottom: '8px' }}>{file.name}</span>
-                     <span style={{ fontSize: '15px', color: '#5f6368', marginBottom: '32px' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                      
-                     {/* Can only remove file if NOT processing and NO report generated yet */}
+                     {isProcessing && (
+                       <div style={{ padding: '60px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                         <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                           <img src={logo} alt="Trinetra Scanner" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
+                           <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}>
+                             <Loader2 size={32} color="#1a73e8" />
+                           </motion.div>
+                         </div>
+                         <span style={{ fontSize: '18px', fontWeight: '600', color: '#202124', letterSpacing: '0.5px' }}>Scanning Neural Vectors & Forensics...</span>
+                       </div>
+                     )}
+
                      {!isProcessing && !report && (
-                       <button 
-                          onClick={() => setFile(null)}
-                          style={{ background: 'transparent', border: '1px solid #dadce0', color: '#5f6368', padding: '10px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px', fontWeight: '500', transition: 'all 0.2s' }}
-                          onMouseOver={(e) => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.color = '#EA4335'; e.currentTarget.style.borderColor = '#EA4335'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#5f6368'; e.currentTarget.style.borderColor = '#dadce0'; }}
-                       >
-                         Remove selection
-                       </button>
+                       <>
+                         <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: options.find(o => o.id === activeUpload)?.bg, display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
+                            <FileText size={36} color={options.find(o => o.id === activeUpload)?.color} />
+                         </div>
+                         <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#202124', marginBottom: '8px' }}>{file.name}</span>
+                         <span style={{ fontSize: '15px', color: '#5f6368', marginBottom: '32px' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                         
+                         <button 
+                            onClick={() => { setFile(null); setReport(null); setActiveUpload(null); setIsProcessing(false); }}
+                            style={{ background: 'transparent', border: '1px solid #dadce0', color: '#5f6368', padding: '10px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px', fontWeight: '500', transition: 'all 0.2s' }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.color = '#EA4335'; e.currentTarget.style.borderColor = '#EA4335'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#5f6368'; e.currentTarget.style.borderColor = '#dadce0'; }}
+                         >
+                           Remove Selection
+                         </button>
+                       </>
+                     )}
+
+                     {!isProcessing && report && (
+                       <div style={{ width: '100%', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '24px' }}>
+                            {/* Visual Region Mapper Container */}
+                            <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dadce0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                               <div style={{ padding: '14px 20px', borderBottom: '1px solid #dadce0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#3c4043' }}>{activeUpload === 'audio' ? 'Audio Playback & Hotspots' : 'Target Region Mapping'}</span>
+                                  <span style={{ fontSize: '12px', color: '#ea4335', background: '#fce8e6', padding: '4px 10px', borderRadius: '12px', fontWeight: '700' }}>2 Anomalies</span>
+                               </div>
+                               <div style={{ flex: 1, minHeight: '260px', background: '#111827', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '16px 16px', padding: '20px' }}>
+                                  {activeUpload === 'audio' ? (
+                                     <div style={{ width: '100%', height: '100px', display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
+                                        {Array.from({ length: 40 }).map((_, i) => {
+                                           const isFake = (i > 12 && i < 18) || (i > 28 && i < 33);
+                                           const height = 20 + Math.random() * 60;
+                                           return (
+                                             <motion.div 
+                                               key={i} 
+                                               initial={{ height: 0 }} 
+                                               animate={{ height: `${height}%` }} 
+                                               transition={{ delay: i * 0.02 }}
+                                               style={{ flex: 1, background: isFake ? '#ea4335' : '#4285F4', borderRadius: '4px', opacity: isFake ? 1 : 0.6, boxShadow: isFake ? '0 0 8px rgba(234,67,53,0.5)' : 'none' }} 
+                                             />
+                                           );
+                                        })}
+                                        {/* Playhead Scanner */}
+                                        <motion.div animate={{ left: ['0%', '100%', '0%'] }} transition={{ repeat: Infinity, duration: 6, ease: "linear" }} style={{ position: 'absolute', top: '-20px', bottom: '-20px', width: '2px', background: '#fff', boxShadow: '0 0 10px #fff', zIndex: 10 }} />
+                                     </div>
+                                  ) : (
+                                     <div style={{ width: '130px', height: '170px', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '60px 60px 40px 40px', position: 'relative' }}>
+                                        <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6, type: 'spring' }} style={{ position: 'absolute', top: '35px', right: '5px', width: '45px', height: '35px', border: '1.5px solid #ea4335', borderRadius: '50%', background: 'rgba(234,67,53,0.3)', boxShadow: '0 0 20px rgba(234,67,53,0.5)' }} />
+                                        <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.1, type: 'spring' }} style={{ position: 'absolute', bottom: '25px', left: '15px', width: '55px', height: '35px', border: '1.5px solid #ea4335', borderRadius: '40%', background: 'rgba(234,67,53,0.2)', boxShadow: '0 0 15px rgba(234,67,53,0.3)' }} />
+                                        <motion.div animate={{ y: [0, 170, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: '#4285F4', boxShadow: '0 0 10px #4285F4' }} />
+                                     </div>
+                                  )}
+                               </div>
+                            </div>
+
+                            {/* Spectral Thermal Heatmap Container */}
+                            <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dadce0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                               <div style={{ padding: '14px 20px', borderBottom: '1px solid #dadce0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#3c4043' }}>{activeUpload === 'audio' ? 'Spectrogram Heatmap Analysis' : 'AI Confidence Heatmap'}</span>
+                                  <span style={{ fontSize: '12px', color: '#5f6368', background: '#f1f3f4', padding: '4px 10px', borderRadius: '12px', fontWeight: '600' }}>{activeUpload?.toUpperCase()} STREAM</span>
+                               </div>
+                               <div style={{ flex: 1, minHeight: '260px', background: '#0a0a0a', position: 'relative', overflow: 'hidden', padding: activeUpload === 'audio' ? '12px' : '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  {activeUpload === 'audio' ? (
+                                     <div style={{ width: '100%', height: 'calc(100% - 40px)', background: 'linear-gradient(to bottom, #020617 0%, #1e1b4b 100%)', position: 'relative', borderRadius: '8px', overflow: 'hidden', marginTop: '-20px' }}>
+                                        <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)', gridTemplateRows: 'repeat(8, 1fr)', gap: '1px' }}>
+                                           {Array.from({ length: 128 }).map((_, i) => {
+                                              const col = i % 16;
+                                              const row = Math.floor(i / 16);
+                                              const isHot = ((col >= 5 && col <= 7) && row > 3) || ((col >= 11 && col <= 13) && row < 4);
+                                              const hue = isHot ? 0 : 210;
+                                              const lum = isHot ? 55 : 30;
+                                              const opacity = isHot ? 0.7 + Math.random() * 0.3 : 0.1 + Math.random() * 0.4;
+                                              return <motion.div initial={{ opacity: 0 }} animate={{ opacity }} transition={{ delay: Math.random() * 0.5 }} key={i} style={{ background: `hsl(${hue}, 100%, ${lum}%)`, borderRadius: '2px' }} />
+                                           })}
+                                        </div>
+                                     </div>
+                                  ) : (
+                                     <>
+                                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.9 }} transition={{ delay: 0.3, duration: 1.5 }} style={{ width: '100%', height: '100%', background: 'radial-gradient(circle at 70% 30%, #ea4335 0%, #fbbc05 25%, #34a853 55%, transparent 80%)', filter: 'blur(20px)' }} />
+                                       <div style={{ position: 'absolute', inset: '0', background: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '10% 10%', pointerEvents: 'none' }} />
+                                     </>
+                                  )}
+
+                                  {/* Risk Grade Legend */}
+                                  <div style={{ position: 'absolute', bottom: '16px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', background: 'rgba(0,0,0,0.5)', padding: '8px 12px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
+                                     <span>Authentic</span>
+                                     <div style={{ width: '120px', height: '6px', borderRadius: '4px', background: 'linear-gradient(90deg, #34A853, #FBBC05, #EA4335)' }} />
+                                     <span>Synthetic</span>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                         
+                         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+                           <button 
+                              onClick={() => { setFile(null); setReport(null); setActiveUpload(null); setIsProcessing(false); }}
+                              style={{ background: '#f8f9fa', border: '1px solid #dadce0', color: '#5f6368', padding: '12px 28px', borderRadius: '24px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}
+                              onMouseOver={(e) => { e.currentTarget.style.background = '#e8eaed'; e.currentTarget.style.color = '#202124'; }}
+                              onMouseOut={(e) => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.color = '#5f6368'; }}
+                           >
+                             Scan New File
+                           </button>
+                         </div>
+                       </div>
                      )}
                   </motion.div>
                 )}
               </div>
 
-              {/* Action Button: Visible when file is selected and NO report exists */}
-              <AnimatePresence mode="wait">
-                {file && !report && !isProcessing && (
-                   <motion.button
-                     key="submit-btn"
-                     onClick={handleSubmit}
-                     initial={{ opacity: 0, y: 20 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     exit={{ opacity: 0, scale: 0.9 }}
-                     transition={{ type: 'spring', bounce: 0.4 }}
-                     style={{
-                       width: '100%', padding: '18px', background: options.find(o => o.id === activeUpload)?.color || '#1a73e8', color: 'white', border: 'none', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', fontSize: '18px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', transition: 'filter 0.2s'
-                     }}
-                     onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
-                     onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(1)'}
-                   >
-                     Initiate Deep Scan
-                     <CheckCircle size={22} />
-                   </motion.button>
-                )}
-
-                {/* Processing State */}
-                {isProcessing && (
-                  <motion.div 
-                    key="processing"
-                    initial={{ opacity: 0, height: 0 }} 
-                    animate={{ opacity: 1, height: 'auto' }} 
-                    exit={{ opacity: 0, height: 0 }} 
-                    style={{ padding: '24px', background: 'white', borderRadius: '20px', border: '1px solid #dadce0', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}
-                  >
-                     <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }} style={{ marginBottom: '16px' }}>
-                       <Activity size={36} color="#1a73e8" />
-                     </motion.div>
-                     <span style={{ fontSize: '16px', fontWeight: '600', color: '#1a73e8', letterSpacing: '0.5px' }}>Scanning Neural Vectors & Forensics...</span>
-                  </motion.div>
-                )}
 
                 {/* Generated Intelligence Report */}
                 {report && (
@@ -293,7 +386,7 @@ export default function Home() {
                     </div>
 
                     {/* Proofs Breakdown List */}
-                    <div>
+                    <div style={{ marginBottom: '40px' }}>
                       <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#202124', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <Fingerprint size={20} color="#1a73e8" /> Forensic Proofs Analyzed
                       </h4>
@@ -308,9 +401,11 @@ export default function Home() {
                         ))}
                       </ul>
                     </div>
+
+
+
                   </motion.div>
                 )}
-              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>

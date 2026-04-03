@@ -28,7 +28,7 @@ export default function Navbar() {
       backgroundColor: 'rgba(255, 255, 255, 0.90)', backdropFilter: 'blur(12px)',
       boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
         <img src={logo} alt="Trinetra Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
         <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#202124', letterSpacing: '-0.5px' }}>Trinetra</span>
       </div>
