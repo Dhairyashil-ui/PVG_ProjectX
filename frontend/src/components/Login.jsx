@@ -32,7 +32,6 @@ export default function Login({ onLoginSuccess }) {
                 });
                 const data = await res.json();
                 if (data.success) {
-                    alert('Login Successful! Welcome to Trinetra.');
                     if (onLoginSuccess) {
                         onLoginSuccess(data.user);
                     }

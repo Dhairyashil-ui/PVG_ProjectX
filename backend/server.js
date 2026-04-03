@@ -2,12 +2,30 @@
 const express = require('express');
 const cors = require('cors');
 const { OAuth2Client } = require('google-auth-library');
+const mongoose = require('mongoose');
 
 const app = express();
 const port = process.env.PORT || 5000;
 
+// MongoDB Connection
+const MONGO_URI = 'mongodb+srv://carbosafe_db_user:8do8Odfd1h6IPgIq@projectx.liycafo.mongodb.net/?appName=projectx';
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('Connected to MongoDB via FlipkartCluster'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Profile Schema
+const profileSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  name: { type: String, required: true },
+  picture: { type: String },
+  userImage: { type: String }, // base64
+  voiceSample: { type: String }, // base64
+  createdAt: { type: Date, default: Date.now }
+});
+const Profile = mongoose.model('Profile', profileSchema);
+
 // Update this with the real Google Client ID when deploying
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1044465224388-72r28oabeq3t3ocigb818edj122g6j2n.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '954199899941-3efq12bhkrbamu96tc31smvfqhvq0r8o.apps.googleusercontent.com';
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 app.use(cors());
@@ -23,9 +41,9 @@ app.post('/api/auth/google', async (req, res) => {
   try {
     // If the frontend used useGoogleLogin (which returns an access token, not an ID token),
     // we use tokeninfo to verify it with Google endpoint or we get profile data
-    
+
     const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch user info with token');
     }
@@ -54,6 +72,34 @@ app.post('/api/auth/google', async (req, res) => {
   } catch (error) {
     console.error('Error verifying Google token:', error.message);
     return res.status(401).json({ success: false, message: 'Token verification failed' });
+  }
+}); app.post('/api/profile', async (req, res) => {
+  const { email, name, picture, userImage, voiceSample } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email is required' });
+  }
+
+  try {
+    let profile = await Profile.findOne({ email });
+    if (profile) {
+      // Update existing profile
+      profile.name = name || profile.name;
+      profile.picture = picture || profile.picture;
+      profile.userImage = userImage || profile.userImage;
+      profile.voiceSample = voiceSample || profile.voiceSample;
+      await profile.save();
+    } else {
+      // Create new profile
+      profile = new Profile({
+        email, name, picture, userImage, voiceSample
+      });
+      await profile.save();
+    }
+
+    return res.status(200).json({ success: true, message: 'Profile saved successfully', profile });
+  } catch (err) {
+    console.error('Error saving profile:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
