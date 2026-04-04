@@ -76,7 +76,7 @@ async function createFileCheck(filePath, originalFilename, mimeType) {
     filename: originalFilename,
     contentType: mimeType,
   });
-  form.append('is_private_scan', 'true');
+  form.append('is_private_scan', 'false');
   form.append('is_deep_scan', 'false');
   form.append('idempotency_key', uuidv4());
 
@@ -100,7 +100,7 @@ async function createTextCheck(text) {
     {
       input_type: 'text',
       input_value: text,
-      is_private_scan: true,
+      is_private_scan: false,
       is_deep_scan: false,
       idempotency_key: uuidv4(),
     },
