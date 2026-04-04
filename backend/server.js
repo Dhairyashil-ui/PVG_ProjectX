@@ -38,6 +38,7 @@ app.use(
 ────────────────────────────────────────────────── */
 const allowedOrigins = [
   process.env.FRONTEND_URL,           // e.g. https://trinetra.vercel.app
+  'https://trenetra.vercel.app',      // explicit addition for production
   'http://localhost:5173',            // Vite dev
   'http://localhost:3000',
 ].filter(Boolean);
