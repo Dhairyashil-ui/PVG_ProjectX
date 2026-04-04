@@ -10,7 +10,7 @@ const options = [
   { id: 'image', label: 'Image', icon: ImageIcon, color: '#4285F4', bg: '#e8f0fe', accepts: 'Supports JPG, PNG, WEBP' },
   { id: 'audio', label: 'Audio', icon: Mic, color: '#FBBC05', bg: '#fef7e0', accepts: 'Supports MP3, WAV, M4A' },
   { id: 'video', label: 'Video', icon: Video, color: '#EA4335', bg: '#fce8e6', accepts: 'Supports MP4, MOV, AVI' },
-  { id: 'live', label: 'Live Video', icon: Monitor, color: '#34A853', bg: '#e6f4ea', accepts: 'Connect Stream URL or Source' }
+  { id: 'text', label: 'Text', icon: FileText, color: '#34A853', bg: '#e6f4ea', accepts: 'Upload Image or Paste Text' }
 ];
 
 export default function Home() {
@@ -18,6 +18,7 @@ export default function Home() {
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [report, setReport] = useState(null);
+  const [textInput, setTextInput] = useState('');
   const fileInputRef = useRef(null);
 
   const triggerAnalysis = () => {
@@ -176,7 +177,7 @@ export default function Home() {
                       ref={fileInputRef} 
                       onChange={handleFileChange} 
                       style={{ display: 'none' }} 
-                      accept={activeUpload === 'image' ? 'image/*' : activeUpload === 'video' ? 'video/*' : activeUpload === 'audio' ? 'audio/*' : '*'} 
+                      accept={activeUpload === 'image' ? 'image/*' : activeUpload === 'video' ? 'video/*' : activeUpload === 'audio' ? 'audio/*' : activeUpload === 'text' ? 'text/plain,image/*' : '*'} 
                     />
                     <button 
                       onClick={() => fileInputRef.current?.click()}
@@ -188,6 +189,39 @@ export default function Home() {
                     >
                       Browse Files
                     </button>
+
+                    {activeUpload === 'text' && (
+                       <div style={{ marginTop: '24px', width: '100%', maxWidth: '400px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                             <div style={{ flex: 1, height: '1px', background: '#e8eaed' }} />
+                             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#80868b', textTransform: 'uppercase' }}>or paste text</span>
+                             <div style={{ flex: 1, height: '1px', background: '#e8eaed' }} />
+                          </div>
+                          <textarea 
+                             placeholder="Paste actual text here..." 
+                             style={{ width: '100%', height: '100px', padding: '16px', borderRadius: '12px', border: '1px solid #dadce0', resize: 'none', fontFamily: 'inherit', fontSize: '14px', outline: 'none', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+                             value={textInput}
+                             onChange={(e) => setTextInput(e.target.value)}
+                             onFocus={(e) => e.currentTarget.style.borderColor = '#34A853'}
+                             onBlur={(e) => e.currentTarget.style.borderColor = '#dadce0'}
+                          />
+                          <button 
+                             disabled={!textInput.trim()}
+                             onClick={() => {
+                               if (textInput.trim()) {
+                                 setFile({ name: 'Pasted_Text_Analysis.txt', size: textInput.length * 2, content: textInput });
+                                 setReport(null); 
+                                 triggerAnalysis();
+                               }
+                             }}
+                             style={{
+                               marginTop: '12px', width: '100%', padding: '12px', background: textInput.trim() ? '#34A853' : '#e8eaed', color: textInput.trim() ? '#fff' : '#9aa0a6', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: textInput.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.2s'
+                             }}
+                          >
+                             Analyze Text
+                          </button>
+                       </div>
+                    )}
                   </motion.div>
                 ) : (
                   <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
@@ -256,7 +290,7 @@ export default function Home() {
                             )}
 
                             {/* Spectral Thermal Heatmap Container */}
-                            {activeUpload !== 'audio' && (
+                            {activeUpload !== 'audio' && activeUpload !== 'text' && (
                                <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dadce0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
                                   <div style={{ padding: '14px 20px', borderBottom: '1px solid #dadce0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#3c4043' }}>AI Confidence Heatmap</span>
@@ -273,6 +307,26 @@ export default function Home() {
                                         <span>Authentic</span>
                                         <div style={{ width: '120px', height: '6px', borderRadius: '4px', background: 'linear-gradient(90deg, #34A853, #FBBC05, #EA4335)' }} />
                                         <span>Synthetic</span>
+                                     </div>
+                                  </div>
+                               </div>
+                            )}
+
+                            {/* Lexical Analysis Container */}
+                            {activeUpload === 'text' && (
+                               <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dadce0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                                  <div style={{ padding: '14px 20px', borderBottom: '1px solid #dadce0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                     <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#3c4043' }}>Lexical AI Detection</span>
+                                     <span style={{ fontSize: '12px', color: '#ea4335', background: '#fce8e6', padding: '4px 10px', borderRadius: '12px', fontWeight: '700' }}>3 Flagged Phrases</span>
+                                  </div>
+                                  <div style={{ flex: 1, minHeight: '260px', background: '#fafafa', position: 'relative', overflow: 'hidden', padding: '24px', display: 'flex', flexDirection: 'column' }}>
+                                     <p style={{ fontSize: '15.5px', color: '#3c4043', lineHeight: '1.8', margin: 0, fontFamily: '"Georgia", serif' }}>
+                                        The <span style={{ background: '#fce8e6', borderBottom: '2px solid #ea4335', padding: '2px 4px', borderRadius: '4px' }}>proliferation of synthetic media</span> has <span style={{ background: '#fef7e0', borderBottom: '2px solid #fbbc05', padding: '2px 4px', borderRadius: '4px' }}>drastically altered</span> our digital landscape. Recent advancements in generative adversarial networks have created <span style={{ background: '#fce8e6', borderBottom: '2px solid #ea4335', padding: '2px 4px', borderRadius: '4px' }}>hyper-realistic deepfakes</span> that challenge our fundamental understanding of verifiable truth. It is imperative that we deploy <span style={{ background: '#e6f4ea', borderBottom: '2px solid #34a853', padding: '2px 4px', borderRadius: '4px' }}>robust counter-measures</span> to ensure platform integrity.
+                                     </p>
+                                     <div style={{ marginTop: 'auto', paddingTop: '20px', display: 'flex', gap: '16px', fontSize: '12px', fontWeight: 'bold', color: '#5f6368', textTransform: 'uppercase' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ea4335' }}/> High Probability AI</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#fbbc05' }}/> Suspicious</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#34a853' }}/> Human-written</div>
                                      </div>
                                   </div>
                                </div>
