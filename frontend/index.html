@@ -2,9 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/src/assets/logo.png" />
+
+    <!-- Favicon — SVG served from /public, ico fallback using same file -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.svg" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trinetra</title>
+
+    <!-- SEO -->
+    <title>Trinetra — AI Fake Media Detection</title>
+    <meta name="description" content="Detect AI-generated images, audio, video and text in seconds using Trinetra, powered by ZeroTrue multimodal detection." />
+    <meta name="theme-color" content="#1a73e8" />
+
+    <!-- OG -->
+    <meta property="og:title" content="Trinetra — AI Fake Media Detection" />
+    <meta property="og:description" content="Detect deepfakes, AI voices, and synthetic content with explainable results." />
+    <meta property="og:type" content="website" />
   </head>
   <body>
     <div id="root"></div>
