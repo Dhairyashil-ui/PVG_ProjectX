@@ -184,6 +184,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     });
   } catch (err) {
     console.error('[DETECT/UPLOAD] Error:', err.message);
+    if (err.response?.data) console.error('ZeroTrue Error Data:', JSON.stringify(err.response.data));
     // Try to mark scan as failed
     if (scan) {
       scan.status = 'failed';
@@ -193,16 +194,17 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // Clean up temp file
     if (file?.path) fs.unlink(file.path, () => {});
 
-    if (err.response?.status === 401) {
-      return res.status(401).json({ success: false, message: 'Invalid ZeroTrue API key.' });
+    const errDataStr = JSON.stringify(err.response?.data || {});
+    if (err.response?.status === 401 || errDataStr.includes('Invalid API key')) {
+      return res.status(401).json({ success: false, message: 'Invalid ZeroTrue API key. Please configure a valid key.' });
     }
-    if (err.response?.status === 402) {
+    if (err.response?.status === 402 || errDataStr.includes('quota')) {
       return res.status(402).json({ success: false, message: 'ZeroTrue quota exceeded. Please upgrade your plan.' });
     }
     if (err.message.includes('timeout')) {
       return res.status(504).json({ success: false, message: 'Analysis timed out. Please try a smaller file.' });
     }
-    return res.status(500).json({ success: false, message: 'Detection failed. Please try again.' });
+    return res.status(500).json({ success: false, message: 'Detection failed: ' + (err.response?.data?.message || err.message) });
   }
 });
 
@@ -271,13 +273,15 @@ router.post('/text', async (req, res) => {
       scan.errorMessage = err.message;
       await scan.save().catch(() => {});
     }
-    if (err.response?.status === 401) {
-      return res.status(401).json({ success: false, message: 'Invalid ZeroTrue API key.' });
+    
+    const errDataStr = JSON.stringify(err.response?.data || {});
+    if (err.response?.status === 401 || errDataStr.includes('Invalid API key')) {
+      return res.status(401).json({ success: false, message: 'Invalid ZeroTrue API key. Please configure a valid key.' });
     }
-    if (err.response?.status === 402) {
-      return res.status(402).json({ success: false, message: 'ZeroTrue quota exceeded.' });
+    if (err.response?.status === 402 || errDataStr.includes('quota')) {
+      return res.status(402).json({ success: false, message: 'ZeroTrue quota exceeded. Please upgrade your plan.' });
     }
-    return res.status(500).json({ success: false, message: 'Text analysis failed. Please try again.' });
+    return res.status(500).json({ success: false, message: 'Detection failed: ' + (err.response?.data?.message || err.message) });
   }
 });
 
