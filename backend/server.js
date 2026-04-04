@@ -1,123 +1,160 @@
-// dotenv not needed for now
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { OAuth2Client } = require('google-auth-library');
+const helmet = require('helmet');
 const mongoose = require('mongoose');
+const path = require('path');
+const fs = require('fs');
+
+const { generalLimiter } = require('./middleware/rateLimiter');
+const { detectLimiter } = require('./middleware/rateLimiter');
+const { authLimiter } = require('./middleware/rateLimiter');
+const authRoutes = require('./routes/auth');
+const detectRoutes = require('./routes/detect');
 
 const app = express();
-const port = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
-// MongoDB Connection
-const MONGO_URI = 'mongodb+srv://carbosafe_db_user:8do8Odfd1h6IPgIq@projectx.liycafo.mongodb.net/?appName=projectx';
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('Connected to MongoDB via FlipkartCluster'))
-  .catch(err => console.error('MongoDB connection error:', err));
+/* ──────────────────────────────────────────────────
+   Ensure uploads directory exists
+────────────────────────────────────────────────── */
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
-// Profile Schema
-const profileSchema = new mongoose.Schema({
-  email: { type: String, required: true },
-  name: { type: String, required: true },
-  picture: { type: String },
-  userImage: { type: String }, // base64
-  voiceSample: { type: String }, // base64
-  skippedProfile: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
+/* ──────────────────────────────────────────────────
+   Security Headers (Helmet)
+────────────────────────────────────────────────── */
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
+/* ──────────────────────────────────────────────────
+   CORS
+────────────────────────────────────────────────── */
+const allowedOrigins = [
+  process.env.FRONTEND_URL,           // e.g. https://trinetra.vercel.app
+  'http://localhost:5173',            // Vite dev
+  'http://localhost:3000',
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin '${origin}' not allowed.`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+/* ──────────────────────────────────────────────────
+   Body Parsers
+────────────────────────────────────────────────── */
+app.use(express.json({ limit: '10mb' })); // keep small — file uploads use multipart
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+/* ──────────────────────────────────────────────────
+   Global Rate Limiter
+────────────────────────────────────────────────── */
+app.use(generalLimiter);
+
+/* ──────────────────────────────────────────────────
+   Health Check (Render uses this to verify deployment)
+────────────────────────────────────────────────── */
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'Trinetra Backend',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+  });
 });
-const Profile = mongoose.model('Profile', profileSchema);
 
-// Update this with the real Google Client ID when deploying
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '954199899941-3efq12bhkrbamu96tc31smvfqhvq0r8o.apps.googleusercontent.com';
-const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+/* ──────────────────────────────────────────────────
+   Routes
+────────────────────────────────────────────────── */
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/detect', detectLimiter, detectRoutes);
 
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+/* ──────────────────────────────────────────────────
+   404 Handler
+────────────────────────────────────────────────── */
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} not found.` });
+});
 
-// Main Auth Route
-app.post('/api/auth/google', async (req, res) => {
-  const { token } = req.body;
-  if (!token) {
-    return res.status(400).json({ success: false, message: 'No token provided' });
-  }
+/* ──────────────────────────────────────────────────
+   Global Error Handler
+────────────────────────────────────────────────── */
+app.use((err, req, res, next) => {
+  console.error('[GLOBAL ERROR]', err.stack || err.message);
 
-  try {
-    const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch user info with token');
-    }
-
-    const payload = await response.json();
-    if (!payload.email) {
-      return res.status(401).json({ success: false, message: 'Invalid payload' });
-    }
-
-    console.log(`User mapped visually: ${payload.email} (${payload.name})`);
-
-    // Lookup existing profile
-    let profile = await Profile.findOne({ email: payload.email });
-    let isProfileComplete = false;
-
-    if (!profile) {
-      // Create it inherently from Google Payload
-      profile = new Profile({
-        email: payload.email,
-        name: payload.name,
-        picture: payload.picture,
-      });
-      await profile.save();
-    } else {
-      // It exists - checking if image OR voice was provided OR if they intentionally skipped
-      if (profile.userImage || profile.voiceSample || profile.skippedProfile) {
-        isProfileComplete = true;
-      }
-    }
-
-    return res.status(200).json({
-      success: true,
-      user: {
-        email: payload.email,
-        name: payload.name,
-        picture: payload.picture,
-        isProfileComplete
-      },
-      message: 'Login successful'
+  // Multer errors
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({
+      success: false,
+      message: 'File too large. Maximum allowed size is 50MB.',
     });
-  } catch (error) {
-    console.error('Error verifying Google token:', error.message);
-    return res.status(401).json({ success: false, message: 'Token verification failed' });
   }
-}); app.post('/api/profile', async (req, res) => {
-  const { email, name, picture, userImage, voiceSample, skippedProfile } = req.body;
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required' });
+  if (err.message?.startsWith('Unsupported file type')) {
+    return res.status(415).json({ success: false, message: err.message });
   }
 
-  try {
-    let profile = await Profile.findOne({ email });
-    if (profile) {
-      // Update existing profile
-      profile.name = name || profile.name;
-      profile.picture = picture || profile.picture;
-      if (userImage !== undefined) profile.userImage = userImage;
-      if (voiceSample !== undefined) profile.voiceSample = voiceSample;
-      if (skippedProfile !== undefined) profile.skippedProfile = skippedProfile;
-      
-      await profile.save();
-    } else {
-      // Create new profile
-      profile = new Profile({
-        email, name, picture, userImage, voiceSample, skippedProfile
+  // CORS errors
+  if (err.message?.startsWith('CORS')) {
+    return res.status(403).json({ success: false, message: err.message });
+  }
+
+  res.status(500).json({ success: false, message: 'Internal server error.' });
+});
+
+/* ──────────────────────────────────────────────────
+   MongoDB + Server Start
+────────────────────────────────────────────────── */
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  console.error('[FATAL] MONGO_URI environment variable is not set. Exiting.');
+  process.exit(1);
+}
+
+mongoose
+  .connect(MONGO_URI, {
+    serverSelectionTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+  })
+  .then(() => {
+    console.log('[DB] Connected to MongoDB');
+    const server = app.listen(PORT, () => {
+      console.log(`[SERVER] Trinetra Backend running on port ${PORT}`);
+      if (!process.env.ZEROTRUE_API_KEY) {
+        console.warn('[WARN] ZEROTRUE_API_KEY is not set — detection endpoints will return 503.');
+      }
+    });
+
+    /* ── Graceful Shutdown ── */
+    const shutdown = (signal) => {
+      console.log(`[SERVER] ${signal} received — shutting down gracefully.`);
+      server.close(() => {
+        mongoose.connection.close(false, () => {
+          console.log('[SERVER] MongoDB connection closed. Bye!');
+          process.exit(0);
+        });
       });
-      await profile.save();
-    }
+    };
 
-    return res.status(200).json({ success: true, message: 'Profile saved successfully', profile });
-  } catch (err) {
-    console.error('Error saving profile:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
-
-app.listen(port, () => {
-  console.log(`Trinetra Back-End Engine running on http://localhost:${port}`);
-});
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+  })
+  .catch((err) => {
+    console.error('[FATAL] MongoDB connection failed:', err.message);
+    process.exit(1);
+  });

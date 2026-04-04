@@ -1,20 +1,38 @@
 {
-  "name": "backend",
+  "name": "trinetra-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Trinetra — Fake Media Detection Backend (ZeroTrue API)",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "deepfake",
+    "detection",
+    "zerotrue",
+    "ai"
+  ],
+  "author": "Trinetra",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.0",
-    "express": "^5.2.1",
-    "google-auth-library": "^10.6.2",
-    "mongoose": "^9.3.3"
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.1",
+    "form-data": "^4.0.0",
+    "google-auth-library": "^9.15.0",
+    "helmet": "^8.0.0",
+    "mongoose": "^8.9.0",
+    "multer": "^2.1.1",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }

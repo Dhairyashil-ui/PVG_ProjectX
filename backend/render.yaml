@@ -1,0 +1,37 @@
+# ─── Render Deployment Configuration ───────────────────────────────────────
+# This file tells Render how to build & run the Trinetra backend.
+# Docs: https://render.com/docs/render-yaml-spec
+
+services:
+  - type: web
+    name: trinetra-backend
+    runtime: node
+    region: oregon          # or: frankfurt, singapore, ohio
+    plan: free              # change to 'starter' for always-on, no sleep
+
+    # Root of the backend code in your repo
+    rootDir: backend
+
+    buildCommand: npm install
+    startCommand: npm start
+
+    # Health check — Render will ping this to confirm the service is up
+    healthCheckPath: /health
+
+    # Auto-deploy when the main branch is pushed
+    autoDeploy: true
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      # Set these in the Render dashboard (do NOT commit real values here)
+      - key: MONGO_URI
+        sync: false          # user sets this in Render dashboard
+      - key: ZEROTRUE_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: FRONTEND_URL
+        sync: false          # e.g. https://trinetra.vercel.app
