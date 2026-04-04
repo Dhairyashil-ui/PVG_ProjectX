@@ -17,7 +17,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem('trinetra_user');
-    navigate('/login');
+    navigate('/');
   };
 
   return (

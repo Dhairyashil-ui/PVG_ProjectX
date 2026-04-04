@@ -1,7 +1,7 @@
 // Centralized API service — all backend calls go through here.
 // Base URL is injected via Vite env variable at build time.
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 
 /**
  * Analyze a file (image / audio / video / text file).

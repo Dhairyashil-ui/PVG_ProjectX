@@ -9,7 +9,7 @@ const SplashScreen = () => {
   useEffect(() => {
     // Start fade-out at 4s, navigate at 5s (after 1s fade)
     const fadeTimer = setTimeout(() => setFadeOut(true), 4000);
-    const navTimer  = setTimeout(() => navigate('/login'), 5000);
+    const navTimer  = setTimeout(() => navigate('/home'), 5000);
 
     return () => {
       clearTimeout(fadeTimer);
