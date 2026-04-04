@@ -15,6 +15,10 @@ const detectRoutes = require('./routes/detect');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust the first proxy (Render, Vercel, etc.) so rate-limit reads real client IP
+// Fixes: ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+app.set('trust proxy', 1);
+
 /* ──────────────────────────────────────────────────
    Ensure uploads directory exists
 ────────────────────────────────────────────────── */

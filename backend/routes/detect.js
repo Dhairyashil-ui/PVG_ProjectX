@@ -70,7 +70,9 @@ async function pollZeroTrue(checkId, maxWaitMs = 120000, intervalMs = 3000) {
 ────────────────────────────────────────────────── */
 async function createFileCheck(filePath, originalFilename, mimeType) {
   const form = new FormData();
-  form.append('file', fs.createReadStream(filePath), {
+  // ZeroTrue API expects flat parameters: input_type + input_file
+  form.append('input_type', 'file');
+  form.append('input_file', fs.createReadStream(filePath), {
     filename: originalFilename,
     contentType: mimeType,
   });
@@ -92,10 +94,12 @@ async function createFileCheck(filePath, originalFilename, mimeType) {
    Helper: Create ZeroTrue check for text
 ────────────────────────────────────────────────── */
 async function createTextCheck(text) {
+  // ZeroTrue API expects flat parameters: input_type + input_value
   const resp = await axios.post(
     `${ZEROTRUE_BASE}/check`,
     {
-      input: { type: 'text', value: text },
+      input_type: 'text',
+      input_value: text,
       is_private_scan: true,
       is_deep_scan: false,
       idempotency_key: uuidv4(),
